@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7c6cf0">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<title>برنامه تکالیف من</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ff; --card:#fff; --ink:#2b2a4c; --mute:#8a88a8; --line:#ebe8fb;
+  --main:#7c6cf0; --main2:#a99bff; --ok:#3ccf91; --star:#ffc233;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Vazirmatn",Tahoma,"Segoe UI",sans-serif;overscroll-behavior:none}
+body{min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.app{max-width:520px;margin:0 auto;padding:14px 12px 28px}
+
+header{text-align:center;margin-bottom:12px}
+header h1{margin:0;font-size:20px;font-weight:800}
+header p{margin:2px 0 0;font-size:13px;color:var(--mute)}
+
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tab{flex:1;border:0;background:var(--card);color:var(--mute);font:600 13px inherit;font-family:inherit;
+  padding:9px 0 7px;border-radius:14px;position:relative;transition:.2s;box-shadow:0 1px 0 var(--line)}
+.tab.on{background:var(--main);color:#fff;box-shadow:0 4px 12px rgba(124,108,240,.35);transform:translateY(-1px)}
+.tab .st{display:block;font-size:11px;height:14px;line-height:14px;opacity:.9}
+
+.nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nav button{width:42px;height:42px;border-radius:50%;border:0;background:var(--card);
+  font-size:20px;color:var(--main);box-shadow:0 1px 0 var(--line);font-family:inherit}
+.nav button:active{transform:scale(.92)}
+.nav .mid{text-align:center;flex:1}
+.nav .day{font-size:19px;font-weight:800}
+.bar{height:8px;background:#e4e0fb;border-radius:8px;margin:6px 22px 0;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--main2),var(--ok));border-radius:8px;transition:width .4s}
+.cnt{font-size:12px;color:var(--mute);margin-top:3px}
+
+#view{overflow:hidden;touch-action:pan-y}
+.sheet{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 6px 20px rgba(80,70,160,.08)}
+.sheet.in-l{animation:inL .25s ease}
+.sheet.in-r{animation:inR .25s ease}
+@keyframes inL{from{transform:translateX(-40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes inR{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+
+.row{display:grid;grid-template-columns:86px 1fr;border-bottom:1px solid var(--line);min-height:64px}
+.row:last-child{border-bottom:0}
+.sub{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:6px 4px;font-weight:800;font-size:13px;text-align:center;line-height:1.35;
+  background:var(--c);color:var(--t);border-left:1px solid var(--line)}
+.sub span{font-size:22px}
+.tasks{padding:6px 8px;display:flex;flex-direction:column;gap:2px;justify-content:center}
+.task{display:flex;align-items:center;gap:8px;min-height:38px}
+.chk{flex:none;width:28px;height:28px;border-radius:50%;border:2.5px solid #cfc9f5;background:#fff;
+  display:grid;place-items:center;color:#fff;font-size:15px;padding:0;transition:.15s}
+.task.done .chk{background:var(--ok);border-color:var(--ok);animation:pop .3s}
+@keyframes pop{50%{transform:scale(1.3)}}
+.txt{flex:1;font-size:15px;line-height:1.5;padding:4px 2px;word-break:break-word;min-width:0;outline:0}
+.task.done .txt{text-decoration:line-through;color:var(--mute)}
+.del{flex:none;border:0;background:none;color:#c9c6e0;font-size:18px;width:30px;height:30px;font-family:inherit}
+.del:active{color:#ef6b8a}
+input.new,.txt[contenteditable]:focus{background:#f6f4ff;border-radius:8px}
+input.new{flex:1;min-width:0;border:2px solid var(--main2);border-radius:10px;font:15px inherit;font-family:inherit;
+  padding:6px 8px;color:var(--ink);outline:0;background:#fff}
+.add{align-self:flex-start;border:0;background:none;color:var(--main);font:600 13px inherit;font-family:inherit;
+  padding:6px 4px;opacity:.85}
+.add.big{opacity:1}
+
+#toast{position:fixed;inset:auto 16px calc(24px + env(safe-area-inset-bottom)) 16px;max-width:420px;margin:0 auto;
+  background:var(--ink);color:#fff;border-radius:18px;padding:14px 16px;text-align:center;font-weight:600;
+  font-size:15px;line-height:1.7;transform:translateY(160%);transition:transform .35s cubic-bezier(.2,1.2,.4,1);z-index:20}
+#toast.show{transform:none}
+#toast b{display:block;font-size:26px}
+.fx{position:fixed;top:-30px;font-size:24px;z-index:19;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+footer{text-align:center;margin-top:14px}
+footer button{border:0;background:none;color:var(--mute);font:12px inherit;font-family:inherit;text-decoration:underline;padding:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>📒 برنامه تکالیف من</h1>
+    <p id="hello">امروز هم می‌تونی!</p>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <div class="nav">
+    <button id="nx" aria-label="روز بعد">›</button>
+    <div class="mid">
+      <div class="day" id="dayName"></div>
+      <div class="bar"><i id="fill"></i></div>
+      <div class="cnt" id="cnt"></div>
+    </div>
+    <button id="pv" aria-label="روز قبل">‹</button>
+  </div>
+  <div id="view"></div>
+  <footer><button id="clr">پاک کردن تیک‌های این روز</button></footer>
+</div>
+<div id="toast"></div>
+
+<script>
+const DAYS=["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه"];
+const SUBJ=[
+ {id:"math",n:"ریاضی",e:"🧮",c:"#ffe3e8",t:"#b1304e"},
+ {id:"fa",n:"فارسی",e:"📖",c:"#e2f0ff",t:"#1f62a8"},
+ {id:"sci",n:"علوم",e:"🔬",c:"#dcf6e8",t:"#1f7a4d"},
+ {id:"hed",n:"هدیه‌های آسمانی",e:"🌙",c:"#efe6ff",t:"#6240b8"},
+ {id:"quran",n:"قرآن",e:"🕌",c:"#fff2cf",t:"#946a00"},
+ {id:"soc",n:"اجتماعی",e:"🌍",c:"#ffe9d6",t:"#a4521a"}
+];
+const KEY="student-planner-v1";
+const CHEERS=[
+ ["🎉","آفرین! همه تکلیف‌ها تموم شد!"],
+ ["🌟","تو یه ستاره‌ای! امروزت عالی بود!"],
+ ["🏆","قهرمان! حالا وقت بازیه!"],
+ ["🚀","کارت درخشان بود! به همین ترتیب ادامه بده!"]
+];
+let S=load();
+
+function blank(){
+  return {cur:0,days:DAYS.map(()=>Object.fromEntries(SUBJ.map(s=>[s.id,[]])))};
+}
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(KEY));
+    if(d&&d.days&&d.days.length===5){
+      d.days.forEach(day=>SUBJ.forEach(s=>{if(!Array.isArray(day[s.id]))day[s.id]=[]}));
+      return d;
+    }
+  }catch(e){}
+  const b=blank();
+  const g=new Date().getDay(); // 6=شنبه ... 3=چهارشنبه
+  b.cur={6:0,0:1,1:2,2:3,3:4}[g]??0;
+  return b;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const $=id=>document.getElementById(id);
+
+function stats(i){
+  let t=0,d=0;
+  SUBJ.forEach(s=>S.days[i][s.id].forEach(x=>{t++;if(x.d)d++}));
+  return {t,d,full:t>0&&t===d};
+}
+
+function render(dir){
+  const i=S.cur, day=S.days[i];
+  // tabs
+  $("tabs").innerHTML=DAYS.map((n,k)=>
+    `<button class="tab ${k===i?"on":""}" data-k="${k}">${n.replace("‌","")}<span class="st">${stats(k).full?"⭐":""}</span></button>`).join("");
+  $("dayName").textContent=DAYS[i];
+  const st=stats(i);
+  $("fill").style.width=(st.t?st.d/st.t*100:0)+"%";
+  $("cnt").textContent=st.t?`${st.d} از ${st.t} تکلیف انجام شد`:"هنوز تکلیفی ننوشتی";
+  // rows
+  const v=$("view");
+  v.innerHTML=`<div class="sheet ${dir?(dir>0?"in-r":"in-l"):""}">`+SUBJ.map(s=>{
+    const list=day[s.id];
+    return `<div class="row"><div class="sub" style="--c:${s.c};--t:${s.t}"><span>${s.e}</span>${s.n}</div>
+    <div class="tasks" data-s="${s.id}">`+
+    list.map(x=>`<div class="task ${x.d?"done":""}" data-id="${x.id}">
+      <button class="chk" aria-label="انجام شد">${x.d?"✓":""}</button>
+      <span class="txt" contenteditable="plaintext-only" spellcheck="false">${esc(x.t)}</span>
+      <button class="del" aria-label="حذف">✕</button></div>`).join("")+
+    `<button class="add ${list.length?"":"big"}" data-s="${s.id}">+ ${list.length?"تکلیف دیگر":"افزودن تکلیف"}</button></div></div>`;
+  }).join("")+`</div>`;
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function go(k,dir){
+  if(k<0||k>4)return;
+  dir=dir??(k>S.cur?1:-1);
+  S.cur=k;save();render(dir);
+}
+
+// events
+$("tabs").onclick=e=>{const b=e.target.closest(".tab");if(b)go(+b.dataset.k)};
+$("nx").onclick=()=>go(S.cur+1,1);
+$("pv").onclick=()=>go(S.cur-1,-1);
+
+$("view").addEventListener("click",e=>{
+  const box=e.target.closest(".tasks"); if(!box)return;
+  const sid=box.dataset.s, list=S.days[S.cur][sid];
+  const row=e.target.closest(".task");
+  if(e.target.closest(".chk")){
+    const x=list.find(a=>a.id===row.dataset.id); x.d=!x.d; save();
+    const wasFull=false; render();
+    if(x.d&&stats(S.cur).full)celebrate();
+  }else if(e.target.closest(".del")){
+    S.days[S.cur][sid]=list.filter(a=>a.id!==row.dataset.id); save(); render();
+  }else if(e.target.closest(".add")){
+    openInput(box,sid);
+  }
+});
+// edit existing text
+$("view").addEventListener("focusout",e=>{
+  if(!e.target.classList.contains("txt"))return;
+  const row=e.target.closest(".task"), sid=row.closest(".tasks").dataset.s;
+  const list=S.days[S.cur][sid], x=list.find(a=>a.id===row.dataset.id);
+  const val=e.target.textContent.trim();
+  if(!val){S.days[S.cur][sid]=list.filter(a=>a!==x);}else x.t=val;
+  save();render();
+});
+$("view").addEventListener("keydown",e=>{
+  if(e.target.classList.contains("txt")&&e.key==="Enter"){e.preventDefault();e.target.blur()}
+});
+
+function openInput(box,sid){
+  const btn=box.querySelector(".add");
+  const inp=document.createElement("input");
+  inp.className="new";inp.placeholder="تکلیف رو بنویس...";inp.enterKeyHint="done";
+  btn.replaceWith(inp);inp.focus();
+  let done=false;
+  const commit=()=>{
+    if(done)return;done=true;
+    const v=inp.value.trim();
+    if(v){S.days[S.cur][sid].push({id:uid(),t:v,d:false});save();}
+    render();
+  };
+  inp.onblur=commit;
+  inp.onkeydown=e=>{
+    if(e.key==="Enter"){
+      e.preventDefault();
+      const v=inp.value.trim();
+      if(v){S.days[S.cur][sid].push({id:uid(),t:v,d:false});save();done=true;render();
+        const b=$("view").querySelector(`.tasks[data-s="${sid}"] .add`);if(b)openInput(b.parentElement,sid);}
+      else inp.blur();
+    }
+  };
+}
+
+$("clr").onclick=()=>{
+  if(!confirm("تیک همه تکلیف‌های "+DAYS[S.cur]+" برداشته بشه؟"))return;
+  SUBJ.forEach(s=>S.days[S.cur][s.id].forEach(x=>x.d=false));
+  save();render();
+};
+
+// swipe (finger to the right = next day in RTL)
+let sx=0,sy=0,tr=false;
+const V=$("view");
+V.addEventListener("touchstart",e=>{
+  if(e.target.closest("input,.txt:focus"))return;
+  sx=e.touches[0].clientX;sy=e.touches[0].clientY;tr=true;
+},{passive:true});
+V.addEventListener("touchend",e=>{
+  if(!tr)return;tr=false;
+  const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.6){dx>0?go(S.cur+1,1):go(S.cur-1,-1)}
+},{passive:true});
+
+// celebration
+let tt;
+function celebrate(){
+  const [em,msg]=CHEERS[Math.floor(Math.random()*CHEERS.length)];
+  const t=$("toast");t.innerHTML=`<b>${em}</b>${msg}`;t.classList.add("show");
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),3800);
+  const set=["🎉","⭐","✨","🎈","💜","🌟"];
+  for(let k=0;k<26;k++){
+    const f=document.createElement("div");f.className="fx";
+    f.textContent=set[k%set.length];
+    f.style.left=Math.random()*100+"vw";
+    f.style.animationDuration=(2+Math.random()*2)+"s";
+    f.style.animationDelay=(Math.random()*.6)+"s";
+    document.body.appendChild(f);setTimeout(()=>f.remove(),5000);
+  }
+  if(navigator.vibrate)navigator.vibrate([60,40,60]);
+}
+$("toast").onclick=()=>$("toast").classList.remove("show");
+
+// greeting
+const hello=["امروز هم می‌تونی! 💪","قدم به قدم، تکلیف‌ها تموم می‌شن 🐢","یه تیک، یه موفقیت ✅","تو از پسش برمیای! 🌈"];
+$("hello").textContent=hello[Math.floor(Math.random()*hello.length)];
+render();
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+</script>
+</body>
+</html>
